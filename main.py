@@ -63,21 +63,20 @@ class MyWindow(QMainWindow):
         interpolation_nodes_x = ip.get_function_points_x(self.dots, self.start, self.end)
         interpolation_nodes_y = ip.get_function_points_y(self.func_string, interpolation_nodes_x)
 
-        spline_coefficient_a = interpolation_nodes_y
-        spline_coefficient_c = ip.spline_calculate_c_coefficient(h, spline_coefficient_a)
-        spline_coefficient_b = ip.spline_calculate_b_coefficient(h, spline_coefficient_c, spline_coefficient_a)
+        spline_coefficient_a = interpolation_nodes_y[1:]
+        spline_coefficient_c = ip.spline_calculate_c_coefficient(h, interpolation_nodes_y)
+        spline_coefficient_b = ip.spline_calculate_b_coefficient(h, spline_coefficient_c, interpolation_nodes_y)
         spline_coefficient_d = ip.spline_calculate_d_coefficient(h, spline_coefficient_c)
 
-        spline_coefficient_a = spline_coefficient_a[1:]
         spline_coefficient_c = spline_coefficient_c[1:]
 
         spline_points_x, spline_points_y = ip.calculate_spline(interpolation_nodes_x, spline_coefficient_a,
                                                                spline_coefficient_b, spline_coefficient_c,
-                                                               spline_coefficient_d, 50)
+                                                               spline_coefficient_d, 2)
 
         self.graphicsView.clear()
         self.draw_graph(self.func_points_x, self.func_points_y, "r")
-        self.draw_graph(spline_points_x, spline_points_x, "b")
+        self.draw_graph(spline_points_x, spline_points_y, "b")
 
 if __name__ == "__main__":
     app = QApplication([])

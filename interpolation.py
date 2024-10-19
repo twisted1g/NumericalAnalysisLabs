@@ -24,7 +24,7 @@ def get_function_points_x(
 ) -> list[float]:
 
     h: float = abs(end - start) / (dots * k)
-    x = [start + i * h for i in range(dots * k)]
+    x = [start + i * h for i in range(dots * k + 1)]
     return x
 
 def get_function_points_y(
@@ -70,28 +70,30 @@ def get_chebyshev_nodes(
 
 def spline_build_full_matrix_with_c_coefficient(
         h: float,
-        vector_a: list[float]
+        func_y: list[float]
 ):
-    dim = len(vector_a)
-    matrix_c = np.zeros((dim, dim), dtype="float")
-    vector_b = np.zeros(dim, dtype="float")
+    dim = len(func_y) - 1
+    matrix_c = np.zeros((dim+1, dim+1), dtype="float")
+    vector_b = np.zeros(dim+1, dtype="float")
 
     matrix_c[0, 0] = 1
-    for i in range(1, dim - 1):
+    vector_b[0] = 0
+    for i in range(1, dim):
         matrix_c[i, i - 1] = h
         matrix_c[i, i] = 4 * h
         matrix_c[i, i + 1] = h
-        vector_b[i] = 3 * ((vector_a[i + 1] - vector_a[i]) / h - (vector_a[i] - vector_a[i - 1]) / h)
-    matrix_c[dim - 1, dim - 1] = 1
+        vector_b[i] = 3 * ((func_y[i + 1] - func_y[i]) / h - (func_y[i] - func_y[i - 1]) / h)
+    matrix_c[dim, dim] = 1
+    vector_b[dim] = 0
 
     return matrix_c, vector_b
 
 
 def spline_calculate_c_coefficient(
         h: float,
-        vector_a: list[float]
+        func_y: list[float]
 ) -> list[float]:
-    matrix_c, vector_b = spline_build_full_matrix_with_c_coefficient(h, vector_a)
+    matrix_c, vector_b = spline_build_full_matrix_with_c_coefficient(h, func_y)
     vector_c = np.linalg.solve(matrix_c, vector_b)
 
     return list(vector_c)
@@ -111,11 +113,11 @@ def spline_calculate_d_coefficient(
 def spline_calculate_b_coefficient(
         h: float,
         vector_c: list[float],
-        vector_a: list[float]
+        func_y: list[float]
 ) -> list[float]:
     vector_b: list[float] = []
     for i in range(1, len(vector_c)):
-        element: float = (vector_a[i] - vector_a[i-1]) / h - (2 * vector_c[i-1] + vector_c[i]) / 3
+        element: float = (func_y[i] - func_y[i-1]) / h - (2 * vector_c[i-1] + vector_c[i]) / 3
         vector_b.append(element)
 
     return vector_b
@@ -131,17 +133,17 @@ def calculate_spline(
     spline_y: list[float] = []
     spline_x: list[float] = []
 
-    h = abs(func_x[0] - func_x[1]) / dot_count
 
-    for i in range(len(vector_c)-1):
+    for i in range(len(vector_c)):
+        h = abs(func_x[i] - func_x[i+1]) / dot_count
         x = func_x[i]
+        while x <= func_x[i+1]:
+            spline: float = (vector_a[i] + vector_b[i] * (x - func_x[i+1]) + vector_c[i] * (x - func_x[i+1]) ** 2
+                             + vector_d[i] * (x - func_x[i+1]) ** 3)
 
-        while x < func_x[i+1]:
-            x += h
-            spline: float = (vector_a[i] + vector_b[i] * (x - func_x[i]) + vector_c[i] * (x - func_x[i]) ** 2
-                             + vector_d[i] * (x - func_x[i]) ** 3)
             spline_x.append(x)
             spline_y.append(spline)
+            x += h
 
     return spline_x, spline_y
 
