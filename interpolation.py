@@ -77,14 +77,12 @@ def spline_build_full_matrix_with_c_coefficient(
     vector_b = np.zeros(dim+1, dtype="float")
 
     matrix_c[0, 0] = 1
-    vector_b[0] = 0
     for i in range(1, dim):
         matrix_c[i, i - 1] = h
         matrix_c[i, i] = 4 * h
         matrix_c[i, i + 1] = h
         vector_b[i] = 3 * ((func_y[i + 1] - func_y[i]) / h - (func_y[i] - func_y[i - 1]) / h)
     matrix_c[dim, dim] = 1
-    vector_b[dim] = 0
 
     return matrix_c, vector_b
 
@@ -105,7 +103,7 @@ def spline_calculate_d_coefficient(
 ) -> list[float]:
     vector_d: list[float] = []
     for i in range(1, len(vector_c)):
-        element: float = (vector_c[i] - vector_c[i-1]) / 3 * h
+        element: float = (vector_c[i] - vector_c[i-1]) / (3 * h)
         vector_d.append(element)
 
     return vector_d
@@ -117,7 +115,7 @@ def spline_calculate_b_coefficient(
 ) -> list[float]:
     vector_b: list[float] = []
     for i in range(1, len(vector_c)):
-        element: float = (func_y[i] - func_y[i-1]) / h - (2 * vector_c[i-1] + vector_c[i]) / 3
+        element: float = ((func_y[i] - func_y[i-1]) / h) - ((2 * vector_c[i-1] + vector_c[i]) / 3 * h)
         vector_b.append(element)
 
     return vector_b
@@ -134,12 +132,12 @@ def calculate_spline(
     spline_x: list[float] = []
 
 
-    for i in range(len(vector_c)):
+    for i in range(len(vector_a)):
         h = abs(func_x[i] - func_x[i+1]) / dot_count
         x = func_x[i]
         while x <= func_x[i+1]:
-            spline: float = (vector_a[i] + vector_b[i] * (x - func_x[i+1]) + vector_c[i] * (x - func_x[i+1]) ** 2
-                             + vector_d[i] * (x - func_x[i+1]) ** 3)
+            spline: float = (vector_a[i] + vector_b[i] * (x - func_x[i]) + vector_c[i] * (x - func_x[i]) ** 2
+                             + vector_d[i] * (x - func_x[i]) ** 3)
 
             spline_x.append(x)
             spline_y.append(spline)
