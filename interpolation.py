@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import matrix_solve as ms
+
 
 global_context = {
     'cos': math.cos,
@@ -92,7 +94,8 @@ def spline_calculate_c_coefficient(
         func_y: list[float]
 ) -> list[float]:
     matrix_c, vector_b = spline_build_full_matrix_with_c_coefficient(h, func_y)
-    vector_c = np.linalg.solve(matrix_c, vector_b)
+    lower_diagonal, diagonal, upper_diagonal = ms.get_diagonal(matrix_c)
+    vector_c = ms.tridiagonal_func(lower_diagonal, diagonal, upper_diagonal, vector_b)
 
     return list(vector_c)
 
