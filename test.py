@@ -1,23 +1,7 @@
 import sys
-import sympy
-import numpy
-import math
-from sympy.parsing.sympy_parser import parse_expr
-
+import numerical_integration as ni
 from PyQt6 import uic
 from PyQt6.QtWidgets import *
-
-
-global_context = {
-    'cos': math.cos,
-    'sin': math.sin,
-    'tan': math.tan,
-    'sqrt': math.sqrt,
-    'exp': math.exp,
-    'log': math.log,
-    'pi': math.pi,
-    'e': math.e,
-}
 
 
 class MyWindow(QMainWindow):
@@ -25,107 +9,49 @@ class MyWindow(QMainWindow):
         super().__init__()
         uic.loadUi('MyUI.ui', self)
 
-        self.pushButton_1.clicked.connect(self.MiddleRectangelsMetod)
-        self.pushButton_2.clicked.connect(self.SimpsonMetod)
+        self.pushButton_1.clicked.connect(self.middle_rectangles)
+        self.pushButton_2.clicked.connect(self.simpson_method)
+        self.pushButton_3.clicked.connect(self.gauss_method)
 
 
-    def GetData(self):
-        self.lowLimit = float(self.lineEdit_low.text())
-        self.highLimit = float(self.lineEdit_high.text())
+    def get_data(self):
+        self.low_limit = float(self.lineEdit_low.text())
+        self.high_limit = float(self.lineEdit_high.text())
         self.epsilon = float(self.lineEdit_eps.text())
-        self.functionString = self.lineEdit_func.text()
+        self.function_string = self.lineEdit_func.text()
 
-    def CalculateFunction(self, x):
-        return eval(self.functionString, {"__builtins__": None, 'x': x}, global_context)
-
-
-        #return parse_expr(self.functionString).subs(sympy.Symbol("x"), x)
-
-    def Integral1(self, n):
-        h = (self.highLimit - self.lowLimit) / n
-        area = 0.0
-
-        for i in range(n):
-            midpoint = self.lowLimit + (i + 0.5) * h
-            area += self.CalculateFunction(midpoint) * h
-
-        return area
-
-    def IntegralArray1(self, n):
-            h = (self.highLimit - self.lowLimit) / n
-
-            for i in range(n):
-                yield self.lowLimit + (i + 0.5) * h
-
-    def MiddleRectangelsMetod(self):
-        self.GetData()
-        s1 = 0
-        n = 100
-        s2 = self.Integral1(n)
-
-        while abs(s1 - s2) > self.epsilon:
-            n *= 2
-            s1 = s2
-            s2 = self.Integral1(n)
-
-        self.label.setText(str(s2))
-
-        x = numpy.asarray(list(self.IntegralArray1(n)))
-        y = numpy.array([])
-
-        for i in range(len(x)):
-            if self.CalculateFunction(x[i]) is None:
-                x = numpy.delete(x, i)
-                continue
-            else:
-                y = numpy.append(y, self.CalculateFunction(x[i]))
-
+    def draw_graphic(self):
+        function_x = ni.get_function_points_x(1000, self.low_limit, self.high_limit)
+        function_y = ni.get_function_points_y(self.function_string, function_x)
 
         self.graphicsView.clear()
-        self.graphicsView.plot(x, y, pen='r')
+        self.graphicsView.plot(function_x, function_y, pen='r')
 
-    def Integral2(self, n):
-        h = (self.highLimit - self.lowLimit) / n
-        summa = 0.0
+    def middle_rectangles(self):
+        self.get_data()
 
-        x0 = self.lowLimit
-        x1 = self.lowLimit + h
+        integral = ni.runge_rule(ni.middle_rectangle_method, self.epsilon, 1 / 3, self.function_string,
+                                 self.low_limit, self.high_limit)
 
-        for i in range(n):
-            summa += self.CalculateFunction(x0) + 4 * self.CalculateFunction(x0 + h / 2) + self.CalculateFunction(x1)
-            x0 += h
-            x1 += h
+        self.label.setText(str(integral))
+        self.draw_graphic()
 
-        return (h / 6) * summa
+    def simpson_method(self):
+        self.get_data()
 
-    def IntegralArray2(self):
-        pass
+        integral = ni.runge_rule(ni.simpson_method, self.epsilon, 1 / 15, self.function_string,
+                                 self.low_limit, self.high_limit)
 
-    def SimpsonMetod(self):
-        self.GetData()
-        s1 = 0
-        n = 100
-        s2 = self.Integral2(n)
+        self.label.setText(str(integral))
+        self.draw_graphic()
 
-        while abs(s1 - s2) > self.epsilon:
-            n *= 2
-            s1 = s2
-            s2 = self.Integral2(n)
+    def gauss_method(self):
+        self.get_data()
 
-        self.label.setText(str(s2))
+        integral = ni.gauss_method_fourth_power(self.function_string, self.low_limit, self.high_limit)
 
-        x = numpy.asarray(list(self.IntegralArray1(n)))
-        y = numpy.array([])
-
-        for i in range(len(x)):
-            if self.CalculateFunction(x[i]) is None:
-                x = numpy.delete(x, i)
-                continue
-            else:
-                y = numpy.append(y, self.CalculateFunction(x[i]))
-
-        self.graphicsView.clear()
-        self.graphicsView.plot(x, y, pen='r')
+        self.label.setText(str(integral))
+        self.draw_graphic()
 
 
 if __name__ == "__main__":

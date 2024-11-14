@@ -68,7 +68,7 @@
     <property name="geometry">
      <rect>
       <x>750</x>
-      <y>540</y>
+      <y>470</y>
       <width>201</width>
       <height>91</height>
      </rect>
@@ -81,7 +81,7 @@
     <property name="geometry">
      <rect>
       <x>750</x>
-      <y>420</y>
+      <y>360</y>
       <width>201</width>
       <height>91</height>
      </rect>
@@ -93,8 +93,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>744</x>
-      <y>320</y>
+      <x>740</x>
+      <y>270</y>
       <width>251</width>
       <height>51</height>
      </rect>
@@ -104,6 +104,19 @@
     </property>
     <property name="text">
      <string>Ответ</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>580</y>
+      <width>201</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Метод Гаусса 4-го порядка</string>
     </property>
    </widget>
   </widget>
