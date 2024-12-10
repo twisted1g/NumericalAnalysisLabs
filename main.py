@@ -16,7 +16,7 @@ class MyWindow(QMainWindow):
         self.read_matrix()
         self.get_data()
 
-        eigenvalue, iteration = ei.power_iteration_method(self.matrix, self.epsilon)
+        eigenvalue, vector_x, iteration = ei.power_iteration(self.matrix, self.epsilon)
 
         self.textBrowserAnswer.setText(str(eigenvalue))
         self.textBrowserIteration.setText(str(iteration))
@@ -37,7 +37,7 @@ class MyWindow(QMainWindow):
         s = str(self.textBox.toPlainText()).splitlines()
         self.matrix = []
         for n in s:
-            a = list(map(int, n.split()))
+            a = list(map(float, n.split()))
             self.matrix.append(a)
         self.matrix = np.asarray(self.matrix, dtype=np.longdouble)
 

@@ -6,6 +6,11 @@ import math
 #1 4 1
 #2 1 3
 
+# 2.2  1  0.5  2
+# 1   1.3  2  1
+# 0.5 2  0.5 1.6
+# 2    1 1.6   2
+
 
 def vector_norm(vector_x):
     norm = 0.0
@@ -97,5 +102,6 @@ def rotation_method(matrix_a, epsilon):
     eigenvalues = np.diag(matrix_a)
 
     return list(eigenvalues), iteration
+
 
 
